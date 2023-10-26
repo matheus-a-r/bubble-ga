@@ -15,7 +15,7 @@ generation = 0
 ia_play = True
 
 def main(genomes, config):
-	global generation
+	global generation, n
 	generation += 1
 
 	networks = []
@@ -26,69 +26,44 @@ def main(genomes, config):
 		gun = Shooter(pos = BOTTOM_CENTER)
 		gun.putInBox()
 		
-		
-		
 		network = neat.nn.FeedForwardNetwork.create(genome, config)
 		networks.append(network)
 		genome.fitness = 0
 		genomes_list.append(genome)
 		guns.append(gun)
 
-	# Create background
-	background = Background()
-	
-	game = Game()	
+	# Create background	
 
 	# Starting mouse position
 	mouse_pos = (DISP_W/2, DISP_H/2)
+	background = Background()
+
 	
-	# pretty self-explanatory
-	while not game.over:		
-
-		# quit when you press the x
-		if not ia_play:
-			for event in pg.event.get():
-				if event.type == pg.QUIT:
-					pg.quit()
-					quit()
-
-				# get mouse position
-				#if event.type == pg.MOUSEMOTION: mouse_pos = pg.mouse.get_pos()
-					
-				# if you click, fire a bullet
-				#if event.type == pg.MOUSEBUTTONDOWN: gun.fire()
-				
-				if event.type == pg.KEYDOWN:
-					cheat_manager.view(event) # if a key is pressed, the cheat manager should know about it
-
-					# Ctrl+C to quit
-					if event.key == pg.K_SPACE:
-						gun.fire()
-					if event.key == pg.K_LEFT:
-						mouse_pos = (mouse_pos[0] - 10 , mouse_pos[1])
-					if event.key == pg.K_RIGHT:
-						mouse_pos = (mouse_pos[0] + 10 , mouse_pos[1])
-					if event.key == pg.K_c and pg.key.get_mods() & pg.KMOD_CTRL:
-						pg.quit()
-						quit()
-		else:
-			for gun in guns:
-
-				background.draw()				# Draw BG first		
-
-				grid_manager.view(gun, game)	# Check collision with bullet and update grid as needed		
-
-				gun.rotate(mouse_pos)			# Rotate the gun if the mouse is moved		
-				gun.draw_bullets()				# Draw and update bullet and reloads	
-
-				game.drawScore()				# draw score
-
-				pg.display.update()		
-				clock.tick(60)					# 60 FPS
-
-			game.gameOverScreen(grid_manager, background)
-
+	for gun in guns:
+		game = Game()
+		
+		grid_manager = GridManager()
+		play(background, gun, game, grid_manager, mouse_pos)
+	
 	return
+
+def play(background, gun, game, grid_manager, mouse_pos):
+	
+	background.draw()				# Draw BG first		
+	while not game.over:
+		grid_manager.view(gun, game)	# Check collision with bullet and update grid as needed		
+
+		gun.rotate(mouse_pos)
+		gun.fire()			# Rotate the gun if the mouse is moved		
+		gun.draw_bullets()				# Draw and update bullet and reloads	
+
+		game.drawScore()				# draw score
+
+		pg.display.update()		
+		clock.tick(60)
+
+	game.gameOverScreen(grid_manager, background)	
+
 
 def run(path_config):
 	config = neat.config.Config(neat.DefaultGenome,
