@@ -7,6 +7,7 @@ from objs.game_objects import *
 import pygame as pg
 import neat
 import os
+import time
 
 pg.init()
 
@@ -34,27 +35,33 @@ def main(genomes, config):
 
 	# Create background	
 
-	# Starting mouse position
-	mouse_pos = (DISP_W/2, DISP_H/2)
 	background = Background()
 
-	
 	for gun in guns:
 		game = Game()
 		
 		grid_manager = GridManager()
-		play(background, gun, game, grid_manager, mouse_pos)
+		play(background, gun, game, grid_manager)
 	
 	return
 
-def play(background, gun, game, grid_manager, mouse_pos):
+def play(background, gun, game, grid_manager):
 	
 	background.draw()				# Draw BG first		
 	while not game.over:
 		grid_manager.view(gun, game)	# Check collision with bullet and update grid as needed		
 
-		gun.rotate(mouse_pos)
-		gun.fire()			# Rotate the gun if the mouse is moved		
+		trigger_color = gun.loaded.color
+
+		for i in grid_manager.targets: 				# para cada i nos alvos possíveis
+			if i.color == trigger_color:
+				for j in i.getComrades():
+					if j.color == i.color:
+						gun.rotate((i.pos[0], i.pos[1]))
+									
+								
+		gun.fire()
+
 		gun.draw_bullets()				# Draw and update bullet and reloads	
 
 		game.drawScore()				# draw score
