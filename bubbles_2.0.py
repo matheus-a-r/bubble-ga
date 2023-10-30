@@ -39,30 +39,40 @@ def main(genomes, config):
 	background = Background()
 
 	
-	for gun in guns:
+	for i, gun in enumerate(guns):
 		game = Game()
 		
 		grid_manager = GridManager()
-		play(background, gun, game, grid_manager, mouse_pos)
+		play(background, gun, game, grid_manager, mouse_pos, i, guns, network, genomes_list)
 	
 	return
 
-def play(background, gun, game, grid_manager, mouse_pos):
+def play(background, gun, game, grid_manager, mouse_pos, i, guns, network, genomes_list):
 	
-	background.draw()				# Draw BG first		
+	background.draw()						
 	while not game.over:
-		grid_manager.view(gun, game)	# Check collision with bullet and update grid as needed		
+		grid_manager.view(gun, game)			
 
-		gun.rotate(mouse_pos)
-		gun.fire()			# Rotate the gun if the mouse is moved		
-		gun.draw_bullets()				# Draw and update bullet and reloads	
+		old_score = game.score
+		x, y = network[i].activate((gun.loaded.color,
+                                        grid_manager.targets,
+                                    ))
+		target = (x * DISP_W, y * DISP_H)
+		
+		gun.rotate(target)
+		gun.fire()
+		new_score = game.score
+		if new_score > old_score:
+			genomes_list[i].fitness += 0.1
 
-		game.drawScore()				# draw score
+		gun.draw_bullets()					
+
+		game.drawScore()				
 
 		pg.display.update()		
 		clock.tick(60)
 
-	game.gameOverScreen(grid_manager, background)	
+	#game.gameOverScreen(grid_manager, background)	
 
 
 def run(path_config):
