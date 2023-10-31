@@ -8,6 +8,7 @@ import pygame as pg
 import neat
 import os
 
+
 pg.init()
 
 generation = 0
@@ -21,15 +22,17 @@ def main2(genomes, config):
 	networks = []
 	genomes_list = []
 	guns = []
-	
-	for _, genome in genomes:
+	scores = {}
+
+
+	for indice, genome in enumerate(genomes):
 		gun = Shooter(pos = BOTTOM_CENTER)
 		gun.putInBox()
 		
-		network = neat.nn.FeedForwardNetwork.create(genome, config)
+		network = neat.nn.FeedForwardNetwork.create(genome[1], config)
 		networks.append(network)
-		genome.fitness = 0
-		genomes_list.append(genome)
+		genome[1].fitness = 0
+		genomes_list.append(genome[1])
 		guns.append(gun)
 
 		# MAIN ORIGINAL
@@ -62,21 +65,28 @@ def main2(genomes, config):
 					if event.key == pg.K_c and pg.key.get_mods() & pg.KMOD_CTRL:
 						pg.quit()
 						quit()
+			
 
 			old_score = game.score
+
 			inputs = []
-			for j, line in enumerate(grid_manager.grid):
-				if j > len(grid_manager.grid)-5 and j != len(grid_manager.grid)-1:
-					for bubble in line:
-						inputs.append(sum_color(bubble))
-
+			grid = grid_manager.grid
+			
+			for row in range(GRID_ROWS):
+				for col in range(GRID_COLS):
+					bubble = grid[row][col]
+					inputs.append(row)
+					inputs.append(col)
+					inputs.append(sum_color(bubble))
+					
 			inputs.append(gun.loaded.color[0] + gun.loaded.color[1] + gun.loaded.color[2])
-
+			
 			res = network.activate(inputs)
+
 			mouse_pos = (res[0] * DISP_W, res[1] * DISP_H)
 
 			if not isInitialMove and last_move[0] == mouse_pos[0] and last_move[1] == mouse_pos[1]:
-				genome.score -= 1
+				genomes_list[indice].fitness -= 1
 
 				
 			last_move[0] = mouse_pos[0]
@@ -96,13 +106,24 @@ def main2(genomes, config):
 			game.drawScore()				# draw score
 
 			if new_score > old_score:
-				genome.fitness += 0.1
+				genomes_list[indice].fitness += 0.1
 
 			pg.display.update()
 
 			clock.tick(10000)					# 60 FPS
-
-		genome.fitness += game.score/10
+		
+		scores[indice] = game.score
+		#genomes_list[indice].fitness += game.score/10
+	max_score = 0
+	index = 0
+	for score in scores:
+		if scores[score] > max_score:
+			max_score = scores[score]
+			index = score
+	
+	guns = [guns[index]]
+	networks = [networks[index]]
+	genomes_list = [genomes_list[index]]
 
 def sum_color(bubble):
 	if bubble.color == BG_COLOR:
