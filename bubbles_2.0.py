@@ -35,35 +35,47 @@ def main(genomes, config):
 	# Create background	
 
 	# Starting mouse position
-	mouse_pos = (DISP_W/2, DISP_H/2)
 	background = Background()
 
 	
-	for i, gun in enumerate(guns):
+	for i in range(len(genomes)):
 		game = Game()
 		
 		grid_manager = GridManager()
-		play(background, gun, game, grid_manager, mouse_pos, i, guns, network, genomes_list)
+		play(background, guns[i], game, grid_manager, networks[i], genomes_list[i])
 	
 	return
 
-def play(background, gun, game, grid_manager, mouse_pos, i, guns, network, genomes_list):
-	
+def sum_color(bubble):
+	if not bubble.exists:
+		return -1.0
+
+	return bubble.color[0] + bubble.color[1] + bubble.color[2]
+
+
+def play(background, gun, game, grid_manager, network, genomes_list):
 	background.draw()						
 	while not game.over:
-		grid_manager.view(gun, game)			
+		grid_manager.view(gun, game)
 
 		old_score = game.score
-		x, y = network[i].activate((gun.loaded.color,
-                                        grid_manager.targets,
-                                    ))
-		target = (x * DISP_W, y * DISP_H)
+		
+		inputs = []
+		for i in range(len(grid_manager.grid)):
+			if i <= 10:
+				for bubble in grid_manager.grid[i]:
+					inputs.append(sum_color(bubble))
+
+		inputs.append(gun.loaded.color[0] + gun.loaded.color[1] + gun.loaded.color[2])
+
+		res = network.activate(inputs)
+		target = (res[0] * DISP_W, res[1] * DISP_H)
 		
 		gun.rotate(target)
 		gun.fire()
 		new_score = game.score
 		if new_score > old_score:
-			genomes_list[i].fitness += 0.1
+			genomes_list.fitness += 0.1
 
 		gun.draw_bullets()					
 
