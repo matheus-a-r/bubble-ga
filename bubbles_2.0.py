@@ -62,7 +62,7 @@ def play(background, gun, game, grid_manager, network, genomes_list):
 		
 		inputs = []
 		for i in range(len(grid_manager.grid)):
-			if i <= 10:
+			if i < 3:
 				for bubble in grid_manager.grid[i]:
 					inputs.append(sum_color(bubble))
 
