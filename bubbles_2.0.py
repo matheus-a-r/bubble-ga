@@ -42,46 +42,61 @@ def main(genomes, config):
 		game = Game()
 		
 		grid_manager = GridManager()
-		play(background, guns[i], game, grid_manager, networks[i], genomes_list[i])
+		play(background, guns, game, grid_manager, networks, genomes, i)
 	
 	return
 
 def sum_color(bubble):
 	if not bubble.exists:
 		return -1.0
+	
+	color_sum = bubble.color[0] + bubble.color[1] + bubble.color[2]
 
-	return bubble.color[0] + bubble.color[1] + bubble.color[2]
+	if color_sum == 256:
+		color_sum = 0
+	elif color_sum == 257:
+		color_sum = 1
+	elif color_sum == 258:
+		color_sum = 2
+	elif color_sum == 420:
+		color_sum = 3
+	elif color_sum == 510:
+		color_sum = 4
+	elif color_sum == 382: 
+		color_sum = 5
+
+	return color_sum
 
 
-def play(background, gun, game, grid_manager, network, genomes_list):
+def play(background, guns, game, grid_manager, networks, genomes_list, i):
 	background.draw()						
 	while not game.over:
-		grid_manager.view(gun, game)
+		grid_manager.view(guns[i], game)
 
 		old_score = game.score
 		
 		inputs = []
-		for i in range(len(grid_manager.grid)):
-			if i < 3:
-				for bubble in grid_manager.grid[i]:
+		for j in range(len(grid_manager.grid)):
+			if j < 3:
+				for bubble in grid_manager.grid[j]:
 					inputs.append(sum_color(bubble))
 
-		inputs.append(gun.loaded.color[0] + gun.loaded.color[1] + gun.loaded.color[2])
+		inputs.append(guns[i].loaded.color[0] + guns[i].loaded.color[1] + guns[i].loaded.color[2])
 
-		res = network.activate(inputs)
+		res = networks[i].activate(inputs)
 		target = (res[0] * DISP_W, res[1] * DISP_H)
 		
-		gun.rotate(target)
-		gun.fire()
+		guns[i].rotate(target)
+		guns[i].fire()
 		new_score = game.score
 		if new_score > old_score:
-			genomes_list.fitness += 0.1
+			genomes_list[i].fitness += 0.1
 
-		gun.draw_bullets()					
+		guns[i].draw_bullets()			
 
 		game.drawScore()				
 
-		pg.display.update()		
+		pg.display.update()	
 		clock.tick(60)
 
 	#game.gameOverScreen(grid_manager, background)	
