@@ -106,8 +106,9 @@ def main2(genomes, config):
 			game.drawScore()				# draw score
 
 			if new_score > old_score:
-				genomes_list[indice].fitness += 0.1
-
+				genomes_list[indice].fitness += 5
+			else:
+				genomes_list[indice].fitness -= 1
 			pg.display.update()
 
 			clock.tick(10000)					# 60 FPS
