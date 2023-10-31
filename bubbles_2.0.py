@@ -41,6 +41,9 @@ def main2(genomes, config):
 
 		# Starting mouse position
 		mouse_pos = (DISP_W/2, DISP_H/2)
+
+		last_move = [0, 0]
+		isInitialMove = True
 		
 		while not game.over:		
 			for event in pg.event.get():
@@ -62,16 +65,22 @@ def main2(genomes, config):
 
 			old_score = game.score
 			inputs = []
-			for j, line in reversed(list(enumerate(grid_manager.grid))):
-				if j < 3:
+			for j, line in enumerate(grid_manager.grid):
+				if j > len(grid_manager.grid)-5 and j != len(grid_manager.grid)-1:
 					for bubble in line:
 						inputs.append(sum_color(bubble))
 
-			print(inputs)
 			inputs.append(gun.loaded.color[0] + gun.loaded.color[1] + gun.loaded.color[2])
 
 			res = network.activate(inputs)
 			mouse_pos = (res[0] * DISP_W, res[1] * DISP_H)
+
+			if not isInitialMove and last_move[0] == mouse_pos[0] and last_move[1] == mouse_pos[1]:
+				genome.score -= 1
+
+				
+			last_move[0] = mouse_pos[0]
+			last_move[1] = mouse_pos[1]
 			
 			background.draw()				# Draw BG first		
 
@@ -91,28 +100,28 @@ def main2(genomes, config):
 
 			pg.display.update()
 
-			clock.tick(1)					# 60 FPS
+			clock.tick(10000)					# 60 FPS
 
 		genome.fitness += game.score/10
 
 def sum_color(bubble):
 	if bubble.color == BG_COLOR:
-		return -1
+		return 0
 	
 	color_sum = bubble.color[0] + bubble.color[1] + bubble.color[2]
 
 	if color_sum == 256:
-		color_sum = 0
-	elif color_sum == 257:
 		color_sum = 1
-	elif color_sum == 258:
+	elif color_sum == 257:
 		color_sum = 2
-	elif color_sum == 420:
+	elif color_sum == 258:
 		color_sum = 3
-	elif color_sum == 510:
+	elif color_sum == 420:
 		color_sum = 4
-	elif color_sum == 382: 
+	elif color_sum == 510:
 		color_sum = 5
+	elif color_sum == 382: 
+		color_sum = 6
 
 	return color_sum
 
