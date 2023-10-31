@@ -14,8 +14,8 @@ generation = 0
 
 ia_play = True
 
-def main(genomes, config):
-	global generation, n
+def main2(genomes, config):
+	global generation
 	generation += 1
 
 	networks = []
@@ -32,23 +32,72 @@ def main(genomes, config):
 		genomes_list.append(genome)
 		guns.append(gun)
 
-	# Create background	
+		# MAIN ORIGINAL
+		# Create background
+		background = Background()
 
-	# Starting mouse position
-	background = Background()
-
-	
-	for i in range(len(genomes)):
-		game = Game()
-		
 		grid_manager = GridManager()
-		play(background, guns, game, grid_manager, networks, genomes, i)
-	
-	return
+		game = Game()	
+
+		# Starting mouse position
+		mouse_pos = (DISP_W/2, DISP_H/2)
+		
+		while not game.over:		
+			for event in pg.event.get():
+				if event.type == pg.QUIT:
+					pg.quit()
+					quit()
+
+				if event.type == pg.KEYDOWN:
+					# Ctrl+C to quit
+					if event.key == pg.K_SPACE:
+						gun.fire()
+					if event.key == pg.K_LEFT:
+						mouse_pos = (mouse_pos[0] - 10 , mouse_pos[1])
+					if event.key == pg.K_RIGHT:
+						mouse_pos = (mouse_pos[0] + 10 , mouse_pos[1])
+					if event.key == pg.K_c and pg.key.get_mods() & pg.KMOD_CTRL:
+						pg.quit()
+						quit()
+
+			old_score = game.score
+			inputs = []
+			for j, line in reversed(list(enumerate(grid_manager.grid))):
+				if j < 3:
+					for bubble in line:
+						inputs.append(sum_color(bubble))
+
+			print(inputs)
+			inputs.append(gun.loaded.color[0] + gun.loaded.color[1] + gun.loaded.color[2])
+
+			res = network.activate(inputs)
+			mouse_pos = (res[0] * DISP_W, res[1] * DISP_H)
+			
+			background.draw()				# Draw BG first		
+
+			grid_manager.view(gun, game)	# Check collision with bullet and update grid as needed		
+
+			gun.rotate(mouse_pos)			# Rotate the gun if the mouse is moved	
+			gun.fire()	
+
+			gun.draw_bullets()				# Draw and update bullet and reloads	
+
+			new_score = game.score
+
+			game.drawScore()				# draw score
+
+			if new_score > old_score:
+				genome.fitness += 0.1
+
+			pg.display.update()
+
+			clock.tick(1)					# 60 FPS
+
+		genome.fitness += game.score/10
 
 def sum_color(bubble):
-	if not bubble.exists:
-		return -1.0
+	if bubble.color == BG_COLOR:
+		return -1
 	
 	color_sum = bubble.color[0] + bubble.color[1] + bubble.color[2]
 
@@ -67,41 +116,6 @@ def sum_color(bubble):
 
 	return color_sum
 
-
-def play(background, guns, game, grid_manager, networks, genomes_list, i):
-	background.draw()						
-	while not game.over:
-		grid_manager.view(guns[i], game)
-
-		old_score = game.score
-		
-		inputs = []
-		for j in range(len(grid_manager.grid)):
-			if j < 3:
-				for bubble in grid_manager.grid[j]:
-					inputs.append(sum_color(bubble))
-
-		inputs.append(guns[i].loaded.color[0] + guns[i].loaded.color[1] + guns[i].loaded.color[2])
-
-		res = networks[i].activate(inputs)
-		target = (res[0] * DISP_W, res[1] * DISP_H)
-		
-		guns[i].rotate(target)
-		guns[i].fire()
-		new_score = game.score
-		if new_score > old_score:
-			genomes_list[i].fitness += 0.1
-
-		guns[i].draw_bullets()			
-
-		game.drawScore()				
-
-		pg.display.update()	
-		clock.tick(60)
-
-	#game.gameOverScreen(grid_manager, background)	
-
-
 def run(path_config):
 	config = neat.config.Config(neat.DefaultGenome,
 								neat.DefaultReproduction,
@@ -112,7 +126,7 @@ def run(path_config):
 	population = neat.Population(config)
 	population.add_reporter(neat.StdOutReporter(True))
 	population.add_reporter(neat.StatisticsReporter())
-	population.run(main, 50)
+	population.run(main2, 50)
 
 if __name__ == '__main__': 
 	path = os.path.dirname(__file__)

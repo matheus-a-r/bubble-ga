@@ -28,12 +28,12 @@ LIGHT_GRAY = (122, 122, 122)
 DARK_GRAY = (60,60,60)
 WHITE = (255, 255, 255)
 
-RED   = (255, 1, 0)
-GREEN = (0, 255, 2)
-BLUE  = (0, 3, 255)
-ORANGE = (255, 165, 0)
-YELLOW = (255, 255, 0)
-VIOLET = (127, 0, 255)
+RED   = (255, 1, 0)     # 0
+GREEN = (0, 255, 2)     # 1
+BLUE  = (0, 3, 255)     # 2
+ORANGE = (255, 165, 0)  # 3
+YELLOW = (255, 255, 0)  # 4
+VIOLET = (127, 0, 255)  # 5
 
 # Ball colours
 BUBBLE_COLORS = [RED,YELLOW,GREEN,BLUE,VIOLET]

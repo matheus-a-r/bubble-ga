@@ -12,7 +12,7 @@ class GridManager():
 		self.even_offset = True		# Which rows (even or odd) are offset
 
 		# this will contain the bubbles that will be checked for collisions
-		self.targets = []			
+		self.targets = []		
 		
 		# Initialize the grid
 		self.grid = [[0 for col in range(self.cols)] for row in range(self.rows)]
