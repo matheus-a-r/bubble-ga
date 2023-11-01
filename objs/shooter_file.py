@@ -7,10 +7,11 @@ import pygame as pg
 
 class Shooter():
 
-	def __init__(self, image = 'images/gun.png', pos = display_rect.center):
+	def __init__(self, image = 'images/gun.png', pos = display_rect.center, genome_index=0):
 
 		# center position of the image
 		self.pos = pos
+		self.genome_index = genome_index
 		self.pos_x, self.pos_y = pos
 
 		self.initGunImage(image)
@@ -23,7 +24,7 @@ class Shooter():
 		self.reload2_pos = (self.pos_x + 9.25*BUBBLE_RADIUS, self.pos_y - 20)
 		self.reload3_pos = (self.pos_x + 11.5*BUBBLE_RADIUS, self.pos_y - 20)
 
-		self.fired = Bullet(self.pos, self.angle)
+		self.fired = Bullet(self.pos, self.angle, genome_index)
 		self.fired.exists = False		
 		self.loaded = Bubble(self.pos)
 		self.reload1 = Bubble(self.reload1_pos)
@@ -121,7 +122,7 @@ class Shooter():
 
 		else:
 			rads = radians(self.angle)
-			self.fired = Bullet(self.pos, rads, self.loaded.color)
+			self.fired = Bullet(self.pos, rads, self.genome_index, self.loaded.color)
 			self.loaded = Bubble(self.pos, self.reload1.color)
 			self.reload1 = Bubble(self.reload1_pos, self.reload2.color)
 			self.reload2 = Bubble(self.reload2_pos, self.reload3.color)

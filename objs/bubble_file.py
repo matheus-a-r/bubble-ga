@@ -43,7 +43,7 @@ class Bubble():
 
 class Bullet(Bubble):
 
-	def __init__(self, pos, angle, color = None):
+	def __init__(self, pos, angle,genome_index, color = None):
 		super().__init__(pos, color)
 
 		self.dx = cos(angle) * BUBBLE_VEL
@@ -51,6 +51,7 @@ class Bullet(Bubble):
 
 		self.pos = pos
 		self.exists = True
+		self.genome_index = genome_index
 
 	def update(self):
 
@@ -65,6 +66,8 @@ class Bullet(Bubble):
 
 			self.draw()
 
+	def get_bolha_atual(self):
+		return self
 
 class GridBubble(Bubble):
 

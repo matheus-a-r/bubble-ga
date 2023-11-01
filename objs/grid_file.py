@@ -41,10 +41,10 @@ class GridManager():
 		self.prev_time = 0			# used for the paths (root search) animation
 
 	# This is the main function of the manager, it handles the main logic of the grid
-	def view(self, gun, game):
+	def view(self, gun, game, genomes_list):
 
 		# if a bullet has been fired, check for collisions, pretty simple
-		if gun.fired.exists: self.checkCollision(gun.fired)
+		if gun.fired.exists: self.checkCollision(gun.fired, genomes_list)
 		
 		# if there's been a collision, we gotta update the grid
 		if self.collided: 
@@ -75,7 +75,7 @@ class GridManager():
 				return	
 
 
-	def checkCollision(self, bullet):
+	def checkCollision(self, bullet, genomes_list):
 
 		# Get the bullet and 'see' its future position
 		# this is so that when the bullet stops existing and turns into the grid, it looks more smooth
@@ -99,18 +99,33 @@ class GridManager():
 					if (bullet_x - (HITBOX_SIZE/2)) < R:			
 						if (bullet_y + (HITBOX_SIZE/2)) > U:
 
+
 							# If the bullet is within the hitbox, destroy it
 							bullet.exists = False
 
 							# There's been a collision
 							self.collided = True
 
-							# NOTE: theres another function that revives a bubble
+							if target.color == bullet.color:
+								genomes_list[bullet.genome_index].fitness += 10
+							else:
+								genomes_list[bullet.genome_index].fitness -= 10
+							
+							bullet.genome_index += 1
 
+							if bullet.genome_index >= len(genomes_list):
+								bullet.genome_index = 0
+
+
+
+							# NOTE: theres another function that revives a bubble
 		# if the bullet goes over the top of the screen, it counts a collision
 		if bullet_y - BUBBLE_RADIUS < 0: 
 			bullet.exists = False
 			self.collided = True
+		
+
+		
 
 	# Finds the closest non-existent bubble to the position of the bullet and revive it
 	def reviveBubble(self, bullet):

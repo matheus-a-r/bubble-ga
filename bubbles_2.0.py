@@ -94,7 +94,7 @@ def main2(genomes, config):
 			
 			background.draw()				# Draw BG first		
 
-			grid_manager.view(gun, game)	# Check collision with bullet and update grid as needed		
+			grid_manager.view(gun, game, genomes_list)	# Check collision with bullet and update grid as needed		
 
 			gun.rotate(mouse_pos)			# Rotate the gun if the mouse is moved	
 			gun.fire()	
@@ -163,5 +163,4 @@ if __name__ == '__main__':
 	path = os.path.dirname(__file__)
 	path_config = os.path.join(path, 'config.txt')
 	run(path_config)
-
 
