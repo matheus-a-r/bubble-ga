@@ -131,7 +131,7 @@ class StateMachine():
 
 
 
-class CheatManager():
+# class CheatManager():
 
 
 	def __init__(self, grid_manager, gun):
