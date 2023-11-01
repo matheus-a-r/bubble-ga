@@ -88,6 +88,7 @@ def main(genomas, config):
 				indice_bola += 1
 			if indice_bola == len(grid_manager.targets):
 				gun.fire()
+				lista_genomas[i].fitness += 0.1
 				fired = True
 			if fired:
 				if game.score > old_score:
@@ -112,10 +113,41 @@ def main(genomas, config):
 
 	return
 
-def run():
-	pass
+def run(config_path):
+    # Carregar a configuração do NEAT a partir do arquivo de configuração
+    config = neat.config.Config(neat.DefaultGenome, 
+								neat.DefaultReproduction, 
+								neat.DefaultSpeciesSet, 
+								neat.DefaultStagnation, 
+								config_path)
 
-if __name__ == '__main__': 
-	while True: main()
+    # Criar a população inicial
+    population = neat.Population(config)
+
+    # Adicionar um relatório de estatísticas para acompanhar o progresso
+    population.add_reporter(neat.StdOutReporter(True))
+    stats = neat.StatisticsReporter()
+    population.add_reporter(stats)
+
+    # Evoluir a população em várias gerações
+    num_generations = 10  # Defina o número de gerações desejado
+    for gen in range(num_generations):
+        print(f"Geracao {gen + 1}")
+        fitness_scores = main(population.run(eval_genomes, 1))
+        max_fitness = max(fitness_scores)
+        print(f"Melhor pontuação de fitness na geração {gen + 1}: {max_fitness}")
+
+        # Você pode adicionar lógica para salvar os melhores genomas e resultados aqui
+
+    # Após todas as gerações, você pode escolher a melhor rede neural para uso posterior
+    best_genome = stats.best_genome()
+    best_network = neat.nn.FeedForwardNetwork.create(best_genome, config)
+
+    # Execute o jogo usando a melhor rede neural ou tome outras ações com base nos resultados
+
+if __name__ == '__main__':
+    # Substitua 'config.txt' pelo caminho real do seu arquivo de configuração do NEAT
+    config_path = 'config.txt'
+    run(config_path)
 
 
