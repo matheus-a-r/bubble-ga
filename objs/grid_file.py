@@ -41,10 +41,10 @@ class GridManager():
 		self.prev_time = 0			# used for the paths (root search) animation
 
 	# This is the main function of the manager, it handles the main logic of the grid
-	def view(self, gun, game, genomes_list):
+	def view(self, gun, game, genomes_list, indice):
 
 		# if a bullet has been fired, check for collisions, pretty simple
-		if gun.fired.exists: self.checkCollision(gun.fired, genomes_list)
+		if gun.fired.exists: self.checkCollision(gun.fired, genomes_list, indice)
 		
 		# if there's been a collision, we gotta update the grid
 		if self.collided: 
@@ -75,7 +75,7 @@ class GridManager():
 				return	
 
 
-	def checkCollision(self, bullet, genomes_list):
+	def checkCollision(self, bullet, genomes_list, indice):
 
 		# Get the bullet and 'see' its future position
 		# this is so that when the bullet stops existing and turns into the grid, it looks more smooth
@@ -107,9 +107,9 @@ class GridManager():
 							self.collided = True
 
 							if target.color == bullet.color:
-								genomes_list[bullet.genome_index].fitness += 10
+								genomes_list[indice].fitness += 2
 							else:
-								genomes_list[bullet.genome_index].fitness -= 10
+								genomes_list[indice].fitness -= 5
 							
 							bullet.genome_index += 1
 

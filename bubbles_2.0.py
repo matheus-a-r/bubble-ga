@@ -84,20 +84,13 @@ def main2(genomes, config):
 			res = network.activate(inputs)
 
 			mouse_pos = (res[0] * DISP_W, res[1] * DISP_H)
-
-			if not isInitialMove and last_move[0] == mouse_pos[0] and last_move[1] == mouse_pos[1]:
-				genomes_list[indice].fitness -= 1
-
-				
-			last_move[0] = mouse_pos[0]
-			last_move[1] = mouse_pos[1]
 			
 			background.draw()				# Draw BG first		
 
-			grid_manager.view(gun, game, genomes_list)	# Check collision with bullet and update grid as needed		
-
 			gun.rotate(mouse_pos)			# Rotate the gun if the mouse is moved	
-			gun.fire()	
+			gun.fire()
+
+			grid_manager.view(gun, game, genomes_list, indice)	# Check collision with bullet and update grid as needed		
 
 			gun.draw_bullets()				# Draw and update bullet and reloads	
 
@@ -106,25 +99,25 @@ def main2(genomes, config):
 			game.drawScore()				# draw score
 
 			if new_score > old_score:
-				genomes_list[indice].fitness += 5
-			else:
-				genomes_list[indice].fitness -= 1
+				proportion = new_score - old_score
+				genomes_list[indice].fitness += 5 * proportion
+			
 			pg.display.update()
 
 			clock.tick(10000)					# 60 FPS
-		
+		genomes_list[indice].fitness -= 10
 		scores[indice] = game.score
 		#genomes_list[indice].fitness += game.score/10
-	max_score = 0
-	index = 0
-	for score in scores:
-		if scores[score] > max_score:
-			max_score = scores[score]
-			index = score
+	# max_score = 0
+	# index = 0
+	# for score in scores:
+	# 	if scores[score] > max_score:
+	# 		max_score = scores[score]
+	# 		index = score
 	
-	guns = [guns[index]]
-	networks = [networks[index]]
-	genomes_list = [genomes_list[index]]
+	# guns = [guns[index]]
+	# networks = [networks[index]]
+	# genomes_list = [genomes_list[index]]
 
 def sum_color(bubble):
 	if bubble.color == BG_COLOR:
@@ -157,7 +150,7 @@ def run(path_config):
 	population = neat.Population(config)
 	population.add_reporter(neat.StdOutReporter(True))
 	population.add_reporter(neat.StatisticsReporter())
-	population.run(main2, 50)
+	winner = population.run(main2, 50)
 
 if __name__ == '__main__': 
 	path = os.path.dirname(__file__)
