@@ -7,7 +7,10 @@ from objs.game_objects import *
 import pygame as pg
 import neat
 import os
+import copy
 
+grid_manager_main = GridManager()
+game_main = Game()
 
 pg.init()
 
@@ -16,15 +19,19 @@ generation = 0
 ia_play = True
 
 def main2(genomes, config):
-	global generation
+	global generation, grid_manager_main, game_main
 	generation += 1
 
 	networks = []
 	genomes_list = []
 	guns = []
 	scores = {}
-
-
+	grid_manager_copy = copy.deepcopy(grid_manager_main)
+	game_copy = copy.deepcopy(game_main)
+	
+	games = [game_copy] * len(genomes)
+	grids = [grid_manager_copy] * len(genomes)
+	
 	for indice, genome in enumerate(genomes):
 		gun = Shooter(pos = BOTTOM_CENTER)
 		gun.putInBox()
@@ -34,21 +41,20 @@ def main2(genomes, config):
 		genome[1].fitness = 0
 		genomes_list.append(genome[1])
 		guns.append(gun)
-
-		# MAIN ORIGINAL
-		# Create background
+		
 		background = Background()
+		
+		grid_manager = grids[indice]
 
-		grid_manager = GridManager()
-		game = Game()	
+		game = games[indice]
 
 		# Starting mouse position
 		mouse_pos = (DISP_W/2, DISP_H/2)
-
+		
 		last_move = [0, 0]
 		isInitialMove = True
 		
-		while not game.over:		
+		while not game.over:
 			for event in pg.event.get():
 				if event.type == pg.QUIT:
 					pg.quit()
@@ -66,58 +72,50 @@ def main2(genomes, config):
 						pg.quit()
 						quit()
 			
-
-			old_score = game.score
-
 			inputs = []
-			grid = grid_manager.grid
-			
-			for row in range(GRID_ROWS):
-				for col in range(GRID_COLS):
-					bubble = grid[row][col]
-					inputs.append(row)
-					inputs.append(col)
-					inputs.append(sum_color(bubble))
-					
+			for j, line in enumerate(grid_manager.grid):
+				if j > len(grid_manager.grid)-3 and j != len(grid_manager.grid)-1:
+					for bubble in line:
+						inputs.append(sum_color(bubble))
+
+
 			inputs.append(gun.loaded.color[0] + gun.loaded.color[1] + gun.loaded.color[2])
-			
 			res = network.activate(inputs)
-
 			mouse_pos = (res[0] * DISP_W, res[1] * DISP_H)
-			
-			background.draw()				# Draw BG first		
 
-			gun.rotate(mouse_pos)			# Rotate the gun if the mouse is moved	
+			targetEquals = False
+
+			if not isInitialMove and last_move[0] == mouse_pos[0] and last_move[1] == mouse_pos[1]:
+				targetEquals = True
+				
+	
+			last_move[0] = mouse_pos[0]
+			last_move[1] = mouse_pos[1]
+
+			
+			background.draw()				
+
+			grid_manager.view(gun, game, genomes_list, indice, targetEquals)
+
+			gun.rotate(mouse_pos)			
 			gun.fire()
 
-			grid_manager.view(gun, game, genomes_list, indice)	# Check collision with bullet and update grid as needed		
+			gun.draw_bullets()					
 
-			gun.draw_bullets()				# Draw and update bullet and reloads	
-
-			new_score = game.score
-
-			game.drawScore()				# draw score
-
-			if new_score > old_score:
-				proportion = new_score - old_score
-				genomes_list[indice].fitness += 5 * proportion
+			
+			if game.score > game.prev_score:
+				proportion = game.score - game.prev_score
+				genomes_list[indice].fitness += 1 * proportion	
+			
+			game.drawScore()
 			
 			pg.display.update()
-
-			clock.tick(10000)					# 60 FPS
-		genomes_list[indice].fitness -= 10
+			clock.tick(10000)
+			isInitialMove = False
+								
+		genomes_list[indice].fitness -= 20
 		scores[indice] = game.score
-		#genomes_list[indice].fitness += game.score/10
-	# max_score = 0
-	# index = 0
-	# for score in scores:
-	# 	if scores[score] > max_score:
-	# 		max_score = scores[score]
-	# 		index = score
-	
-	# guns = [guns[index]]
-	# networks = [networks[index]]
-	# genomes_list = [genomes_list[index]]
+		
 
 def sum_color(bubble):
 	if bubble.color == BG_COLOR:
@@ -150,7 +148,7 @@ def run(path_config):
 	population = neat.Population(config)
 	population.add_reporter(neat.StdOutReporter(True))
 	population.add_reporter(neat.StatisticsReporter())
-	winner = population.run(main2, 50)
+	winner = population.run(main2, 3)
 
 if __name__ == '__main__': 
 	path = os.path.dirname(__file__)

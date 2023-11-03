@@ -75,9 +75,6 @@ class Game():
 		self.score_label = self.font.render('Score: {}'.format(self.score), False, BLACK)
 		self.score_label_x, self.score_label_y, _, _ = self.score_label.get_rect(center = DISP_CENTER)
 
-	def get_score(self):
-		return self.score
-
 
 class Background():
 	def __init__(self):
