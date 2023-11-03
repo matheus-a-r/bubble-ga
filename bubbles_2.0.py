@@ -9,9 +9,6 @@ import neat
 import os
 import copy
 
-grid_manager_main = GridManager()
-game_main = Game()
-
 pg.init()
 
 generation = 0
@@ -19,18 +16,12 @@ generation = 0
 ia_play = True
 
 def main2(genomes, config):
-	global generation, grid_manager_main, game_main
+	global generation, grid_manager_main
 	generation += 1
 
 	networks = []
 	genomes_list = []
 	guns = []
-	scores = {}
-	grid_manager_copy = copy.deepcopy(grid_manager_main)
-	game_copy = copy.deepcopy(game_main)
-	
-	games = [game_copy] * len(genomes)
-	grids = [grid_manager_copy] * len(genomes)
 	
 	for indice, genome in enumerate(genomes):
 		gun = Shooter(pos = BOTTOM_CENTER)
@@ -44,11 +35,10 @@ def main2(genomes, config):
 		
 		background = Background()
 		
-		grid_manager = grids[indice]
+		grid_manager = GridManager()
 
-		game = games[indice]
+		game = Game()
 
-		# Starting mouse position
 		mouse_pos = (DISP_W/2, DISP_H/2)
 		
 		last_move = [0, 0]
@@ -113,9 +103,10 @@ def main2(genomes, config):
 			clock.tick(10000)
 			isInitialMove = False
 								
-		genomes_list[indice].fitness -= 20
-		scores[indice] = game.score
-		
+		genomes_list[indice].fitness -= 5
+	networks = []
+	genomes_list = []
+	guns = []
 
 def sum_color(bubble):
 	if bubble.color == BG_COLOR:
@@ -148,7 +139,7 @@ def run(path_config):
 	population = neat.Population(config)
 	population.add_reporter(neat.StdOutReporter(True))
 	population.add_reporter(neat.StatisticsReporter())
-	winner = population.run(main2, 3)
+	winner = population.run(main2, 50)
 
 if __name__ == '__main__': 
 	path = os.path.dirname(__file__)
